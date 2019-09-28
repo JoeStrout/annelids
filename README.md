@@ -1,5 +1,5 @@
 # annelids
-open-source Worms tribute fangame written with MiniScript in Mini Micro
+open-source Worms tribute fangame written with [MiniScript](https://miniscript.org) in [Mini Micro](https://miniscript.org/MiniMicro)
 
 ## Background
 
@@ -16,5 +16,5 @@ This is a [Mini Micro](https://miniscript.org/MiniMicro) game.  All the source c
 
 3. Double-click the Mini Micro application.
 
-That's it.  Mini Micro automatically looks for a `user.minidis`k (folder or zip file) next to itself, and runs the `startup.ms` script found therein.
+That's it.  Mini Micro automatically looks for a `user.minidisk` (folder or zip file) next to itself, and runs the `startup.ms` script found therein.
 
