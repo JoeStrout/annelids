@@ -10,5 +10,5 @@
 3. SpriteDisplay: explosions, flashes, other "foreground" sprites/effects.
 4. SpriteDisplay: worms, pickups, other "main layer" sprites.
 5. PixelDisplay: destructible ground/terrain.
-6. currently unused.
+6. TileDisplay: water/lava (near bottom of level, kills worms that fall in)
 7. (Back) PixelDisplay: Dark sky/rock background.
