@@ -82,19 +82,20 @@ testBoom = function(x,y)
 	outerR = 100
 	glowColor = color.yellow
 	skyColor = gfx.pixel(320,639)
+	gfx.fillEllipse x-innerR, y-innerR, innerR*2, innerR*2, skyColor
+
 	innerR2 = innerR*innerR
 	outerR2 = outerR*outerR
 	for cy in range(-outerR, outerR)
-		x0 = sqrt(innerR2 - cy*cy)
-		if not (x0 > 0) then x0 = 0
-		x1 = sqrt(outerR2 - cy*cy)
+		cy2 = cy*cy
+		if abs(cy) < innerR then x0 = sqrt(innerR2 - cy2) else x0 = 0
+		x1 = sqrt(outerR2 - cy2)
 		py = y+cy
 		for px in range(x0, x1)
-			if gfx.pixel(x+px, py) != skyColor then gfx.setPixel x+px, py, c
-			if gfx.pixel(x-px, py) != skyColor then gfx.setPixel x-px, py, c
+			if gfx.pixel(x+px, py) != skyColor then gfx.setPixel x+px, py, glowColor
+			if gfx.pixel(x-px, py) != skyColor then gfx.setPixel x-px, py, glowColor
 		end for
 	end for
-	gfx.fillEllipse x-innerR, y-innerR, innerR*2, innerR*2, skyColor
 end function
 
 update = function(dt=0.1)
