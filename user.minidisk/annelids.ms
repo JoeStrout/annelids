@@ -1,5 +1,13 @@
+clear
+
 import "spriteControllers"
 import "listUtil"
+import "MenuUtils"
+
+MenuDisplay = MenuUtils.MenuDisplay
+// Prepare a menu, but don't show it yet
+menu = MenuDisplay.make(480, 320)
+
 
 // Copy stuff from spriteControllers module into our global space,
 // since we'll be using it a lot and it's just handy.
@@ -8,13 +16,12 @@ for kv in spriteControllers
 	globals[kv.key] = @kv.value
 end for
 
-clear
-
 text.row = 25
 text.color = color.yellow
 print "ANNELIDS"
 text.color = color.gray
 print "very early prototyping work"
+print "click to make a crater; right-click to open radial menu"
 _printMark "(press `Esc` to exit)"
 text.color = color.orange
 
@@ -110,9 +117,16 @@ while not key.pressed("escape")
 	dt = time - lastTime
 	lastTime = time
 	update dt
-	if mouse.button and not lastMouseButton then
+	if mouse.button and not lastMouseButton and not menu.isVisible then
 		testBoom mouse.x, mouse.y
 	end if
+	
+	ctrl = key.pressed("left ctrl") or key.pressed("right ctrl")
+	if (mouse.button(1) or (mouse.button and ctrl)) and not menu.isVisible then
+		menu.show mouse.x, mouse.y
+	end if
+	menu.update dt
+
 	lastMouseButton = mouse.button
 	yield
 end while
