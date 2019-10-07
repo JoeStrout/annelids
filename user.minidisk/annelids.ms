@@ -110,7 +110,7 @@ reticle.update = function(dt=0.1)
 			chargeInd.scale = self.chargeTime
 			chargeInd.tint = color.rgba(255, 255-200*self.chargeTime, 0, 128)
 			chargeSound.init 0.1, 100 + 500 * self.chargeTime
-			chargeSound.play 0.05 + 0.4 * self.chargeTime
+			chargeSound.play 0.02 + 0.3 * self.chargeTime
 		end if
 	end if
 end function
@@ -139,13 +139,17 @@ Projectile.init = function(x=0, y=0)
 end function
 Projectile.update = function(dt=0.1)
 	self.vy = self.vy + kGravity * dt
-	self.x = self.x + self.vx * dt
-	self.y = self.y + self.vy * dt
-	if gfx.pixel(self.x, self.y) == groundColor then
-		self.explode
-	else if self.y < 0 then
-		self.hide
-	end if
+	// For better collision detection, we'll break this down into 5 intermediate steps:
+	dt = dt / 5
+	for i in range(1,5)
+		self.x = self.x + self.vx * dt
+		self.y = self.y + self.vy * dt
+		if gfx.pixel(self.x, self.y) == groundColor then
+			self.explode
+			return
+		end if
+	end for	
+	if self.y < 0 then self.hide
 end function
 Projectile.explode = function()
 	doBoom self.x, self.y
@@ -178,14 +182,12 @@ worm2.update = function(dt)
 	super.update dt
 end function
 
-boomSnd = new Sound
-boomSnd.init 1, 100, [1,0], Sound.noiseWave
+boomSnd = file.loadSound("sounds/explosion.wav")
+boomFrames = getFrames("sprites/explosion.png", 128)
 
-doBoom = function(x,y)
-	boomSnd.play
-	
-	innerR = 95
-	outerR = 100
+digTerrain = function(x, y, radius=80)
+	innerR = radius
+	outerR = radius + 5
 	glowColor = color.yellow
 	skyColor = gfx.pixel(320,639)
 	gfx.fillEllipse x-innerR, y-innerR, innerR*2, innerR*2, skyColor
@@ -201,7 +203,39 @@ doBoom = function(x,y)
 			if gfx.pixel(x+px, py) != skyColor then gfx.setPixel x+px, py, glowColor
 			if gfx.pixel(x-px, py) != skyColor then gfx.setPixel x-px, py, glowColor
 		end for
+		dt = time - lastTime
+		if dt > 0.01 then
+			lastTime = time
+			update dt
+		end if			
 	end for
+end function
+
+Explosion = new spriteControllers.Animated
+Explosion.init = function(x, y)
+	self.curAnim = spriteControllers.newAnimation(boomFrames)
+	self.curAnim.fps = 20
+	self.curAnim.loop = false
+	super.init x, y
+	self.scale = 2
+	self.dug = false
+	boomSnd.play	
+end function
+Explosion.update = function(dt)
+	frame = self.curAnim.curFrame
+	if frame == 4 and not self.dug then
+		self.dug = true
+		digTerrain self.x, self.y
+	else if frame == self.curAnim.frames.len-1 then
+		self.hide
+	else
+		super.update dt
+	end if
+end function
+
+doBoom = function(x,y)
+	boom = new Explosion
+	boom.init x, y
 end function
 
 update = function(dt=0.1)
