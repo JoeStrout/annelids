@@ -43,11 +43,19 @@ getFrames = function(imagePath, width=64, height)
 	return frames
 end function
 
-gfx.clear "#000044"
+skyColor = "#000044FF"
+gfx.clear skyColor, 1920, 320
+gfx.scale = 2
+gfx.drawImage file.loadImage("levels/TestLevel1.png")
 
-groundColor = "#FFCC88FF"
-ground = [[0,200], [600,200], [700,260], [960,300], [960,0], [0,0]]
-gfx.fillPoly ground, groundColor
+scrollTo = function(x)
+	if x < 0 then x = 0
+	if x > 2880 then x = 2880
+	gfx.scrollX = x
+	disp.scrollX = x
+end function
+
+scrollTo 2600
 
 updateables = []
 
@@ -81,7 +89,7 @@ reticle.isCharging = false
 reticle.chargeTime = 0
 reticle.update = function(dt=0.1)
 	if not self.isVisible then return
-	dx = mouse.x - self.anchorX
+	dx = mouse.x + disp.scrollX - self.anchorX
 	dy = mouse.y - self.anchorY
 	mouseDist = sqrt(dx*dx + dy*dy)
 	dx = dx / mouseDist
@@ -144,7 +152,7 @@ Projectile.update = function(dt=0.1)
 	for i in range(1,5)
 		self.x = self.x + self.vx * dt
 		self.y = self.y + self.vy * dt
-		if gfx.pixel(self.x, self.y) == groundColor then
+		if gfx.pixel(self.x/gfx.scale, self.y/gfx.scale) != skyColor then
 			self.explode
 			return
 		end if
@@ -159,7 +167,7 @@ end function
 // stationary worm
 worm = new spriteControllers.Animated
 worm.curAnim = spriteControllers.newAnimation(getFrames("sprites/breath.png"))
-worm.init 720, 275
+worm.init 2600+720, 288
 worm.scale = Animated.flippedScale
 
 reticle.init worm.x, worm.y
@@ -173,23 +181,24 @@ end function
 // moving (slithering) worm
 worm2 = new spriteControllers.Animated
 worm2.curAnim = spriteControllers.newAnimation(getFrames("sprites/crawl.png"))
-worm2.init 120, 212
+worm2.init 2600+120, 350
 worm2.speed = 100
 worm2.update = function(dt)
 	self.x = self.x + self.speed * self.scale[0] * dt
-	if self.x > 590 then self.scale = Animated.flippedScale
-	if self.x < 40 then self.scale = Animated.normalScale
+	if self.x > 2880 then self.scale = Animated.flippedScale
+	if self.x < 2680 then self.scale = Animated.normalScale
 	super.update dt
 end function
 
 boomSnd = file.loadSound("sounds/explosion.wav")
 boomFrames = getFrames("sprites/explosion.png", 128)
 
-digTerrain = function(x, y, radius=80)
+// Dig a hole in the terrain.  Note that all parameters here are
+// in buffer coordinates, not screen or sprite coordinates.
+digTerrain = function(x, y, radius=40)
 	innerR = radius
 	outerR = radius + 5
 	glowColor = color.yellow
-	skyColor = gfx.pixel(320,639)
 	gfx.fillEllipse x-innerR, y-innerR, innerR*2, innerR*2, skyColor
 
 	innerR2 = innerR*innerR
@@ -225,7 +234,7 @@ Explosion.update = function(dt)
 	frame = self.curAnim.curFrame
 	if frame == 4 and not self.dug then
 		self.dug = true
-		digTerrain self.x, self.y
+		digTerrain self.x/gfx.scale, self.y/gfx.scale
 	else if frame == self.curAnim.frames.len-1 then
 		self.hide
 	else
@@ -242,6 +251,9 @@ update = function(dt=0.1)
 	for u in updateables
 		u.update dt
 	end for
+	if key.pressed("left") then scrollTo disp.scrollX - 500*dt
+	if key.pressed("right") then scrollTo disp.scrollX + 500*dt
+	
 end function
 
 lastTime = time
