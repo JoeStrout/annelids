@@ -21,26 +21,40 @@ print "ANNELIDS"
 text.color = color.gray
 print "very early prototyping work"
 //print "click to make a crater; right-click to open radial menu"
-print "use mouse to aim; hold mouse button to charge shot"
+print "use mouse to shoot, arrow keys to scroll"
 _printMark "(press `Esc` to exit)"
 text.color = color.orange
 
 disp = display(4)  // (sprites)
 
-getFrames = function(imagePath, width=64, height)
+resolveImage = function(imageOrPath)
+	if imageOrPath isa string then
+		imageOrPath = file.loadImage(imageOrPath)
+		if imageOrPath == null then
+			print "Error: unable to load image at " + imageOrPath
+			exit
+		end if
+	end if
+	return imageOrPath
+end function
+
+getFrames = function(imageOrPath, row, column, count, width=64, height=null)
 	if height == null then height = width
 	frames = []
-	p = file.loadImage(imagePath)
-	if p == null then
-		print "Error: unable to load image at " + imagePath
-		exit
-	end if
-	for row in range(0, p.height / height - 1)
-		for col in range(0, p.width / width - 1)
-			frames.push p.getImage(width*col, height*row, width, height)
-		end for
+	p = resolveImage(imageOrPath)
+	srcx = column * width
+	srcy = p.height - (row+1) * height
+	for i in range(column, column + count - 1)
+		frames.push p.getImage(srcx, srcy, width, height)
+		srcx = srcx + width
 	end for
 	return frames
+end function
+
+getAllFrames = function(imageOrPath, width=64, height)
+	if height == null then height = width
+	p = resolveImage(imageOrPath)
+	return getFrames(p, 0, 0, p.width / width, p.height)
 end function
 
 skyColor = "#000044FF"
@@ -77,7 +91,7 @@ spriteControllers.Animated.__isa = UpdateableSprite
 
 chargeInd = new Sprite
 chargeInd.image = file.loadImage("sprites/chargeIndicator.png")
-chargeSound = new Sound
+chargeSound = file.loadSound("sounds/weapon-charge.wav")
 
 reticle = new UpdateableSprite
 reticle.image = file.loadImage("sprites/reticle.png")
@@ -103,6 +117,7 @@ reticle.update = function(dt=0.1)
 		chargeInd.x = self.anchorX
 		chargeInd.y = self.anchorY
 		disp.sprites.push chargeInd
+		chargeSound.play
 	end if
 	if self.isCharging then
 		if not mouse.button then
@@ -110,6 +125,7 @@ reticle.update = function(dt=0.1)
 			listUtil.removeVal disp.sprites, chargeInd
 			self.isCharging = false
 			self.fire dx, dy, self.chargeTime
+			chargeSound.stop
 		else
 			// keep charging
 			self.chargeTime = self.chargeTime + dt
@@ -117,8 +133,8 @@ reticle.update = function(dt=0.1)
 			chargeInd.rotation = atan2(dy, dx) * 180/pi
 			chargeInd.scale = self.chargeTime
 			chargeInd.tint = color.rgba(255, 255-200*self.chargeTime, 0, 128)
-			chargeSound.init 0.1, 100 + 500 * self.chargeTime
-			chargeSound.play 0.02 + 0.3 * self.chargeTime
+//			chargeSound.init 0.1, 100 + 500 * self.chargeTime
+//			chargeSound.play 0.02 + 0.3 * self.chargeTime
 		end if
 	end if
 end function
@@ -165,8 +181,9 @@ Projectile.explode = function()
 end function
 
 // stationary worm
+wormSheet = file.loadImage("sprites/sheet-blue.png")
 worm = new spriteControllers.Animated
-worm.curAnim = spriteControllers.newAnimation(getFrames("sprites/breath.png"))
+worm.curAnim = spriteControllers.newAnimation(getFrames(wormSheet, 1, 0, 8, 42, 42))
 worm.init 2600+720, 288
 worm.scale = Animated.flippedScale
 
@@ -180,7 +197,7 @@ end function
 
 // moving (slithering) worm
 worm2 = new spriteControllers.Animated
-worm2.curAnim = spriteControllers.newAnimation(getFrames("sprites/crawl.png"))
+worm2.curAnim = spriteControllers.newAnimation(getFrames(wormSheet, 0, 0, 11, 42, 42))
 worm2.init 2600+120, 350
 worm2.speed = 100
 worm2.update = function(dt)
@@ -191,7 +208,7 @@ worm2.update = function(dt)
 end function
 
 boomSnd = file.loadSound("sounds/explosion.wav")
-boomFrames = getFrames("sprites/explosion.png", 128)
+boomFrames = getAllFrames("sprites/explosion.png", 128)
 
 // Dig a hole in the terrain.  Note that all parameters here are
 // in buffer coordinates, not screen or sprite coordinates.
