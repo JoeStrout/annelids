@@ -92,7 +92,7 @@ MenuDisplay.update = function(dt)
 	if self.state == kStateHidden then return
 	dx = mouse.x - self.x
 	dy = mouse.y - self.y
-	ang = atan2(dy, dx) * 180/pi
+	ang = atan(dy, dx) * 180/pi
 	if ang < 0 then ang = ang + 360
 	r = sqrt(dx*dx + dy*dy)
 	
