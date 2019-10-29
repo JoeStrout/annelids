@@ -58,6 +58,7 @@ MenuDisplay.timeInState = function()
 	return time - self.stateStartTime
 end function
 
+// Show the menu at the given SCREEN coordinates.
 MenuDisplay.show = function(x, y)
 	if x == null then x = self.x
 	if y == null then y = self.y

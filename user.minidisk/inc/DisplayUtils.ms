@@ -59,6 +59,14 @@ scrollTo = function(x)
 	disp.scrollX = x
 end function
 
+screenToWorld = function(pos)
+	return {"x": pos.x + gfx.scrollX, "y": pos.y + gfx.scrollY}
+end function
+
+worldToScreen = function(pos)
+	return {"x": pos.x - gfx.scrollX, "y": pos.y - gfx.scrollY}
+end function
+
 scrollTo 2600
 
 keyScroller = {}
