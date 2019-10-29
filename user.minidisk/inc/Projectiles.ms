@@ -6,11 +6,12 @@ globals.Projectile = new UpdateableSprite
 Projectile.image = file.loadImage("sprites/circle32.png")
 Projectile.vx = 1000
 Projectile.vy = 1000
+Projectile.rotate = true		// whether to rotate to face direction of travel
+Projectile.angleOffset = 0		// amount to add to rotation, in degrees
+Projectile.normalScale = [1, 1]
+Projectile.flippedScale = [-1, 1]
 
-Projectile.init = function(x=0, y=0)
-	super.init x, y
-	self.scale = 0.5
-end function
+rad2deg = 180/pi
 
 Projectile.update = function(dt=0.1)
 	self.vy = self.vy + kGravity * dt
@@ -23,7 +24,16 @@ Projectile.update = function(dt=0.1)
 			self.explode
 			return
 		end if
-	end for	
+	end for
+	if self.rotate then
+		if self.vx > 0 then
+			self.scale = self.normalScale
+			self.rotation = atan(self.vy, self.vx) * rad2deg + self.angleOffset
+		else
+			self.scale = self.flippedScale
+			self.rotation = -atan(self.vy, -self.vx) * rad2deg - self.angleOffset
+		end if
+	end if
 	if self.y < 0 then self.hide
 end function
 

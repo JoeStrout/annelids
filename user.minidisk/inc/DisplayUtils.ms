@@ -59,12 +59,25 @@ scrollTo = function(x)
 	disp.scrollX = x
 end function
 
-screenToWorld = function(pos)
-	return {"x": pos.x + gfx.scrollX, "y": pos.y + gfx.scrollY}
+screenToWorld = function(screenPos)
+	return {"x": screenPos.x + gfx.scrollX, "y": screenPos.y + gfx.scrollY}
 end function
 
-worldToScreen = function(pos)
-	return {"x": pos.x - gfx.scrollX, "y": pos.y - gfx.scrollY}
+worldToScreen = function(worldPos)
+	return {"x": worldPos.x - gfx.scrollX, "y": worldPos.y - gfx.scrollY}
+end function
+
+// Drop a raw down from the given position, returning the Y coordinate
+// of the first terrain pixel found.  If none is found within maxDist,
+// then return worldY - maxDist.
+dropRay = function(worldX, worldY, maxDist=42, step=2)
+	minY = worldY - maxDist
+	gx = worldX / gfx.scale
+	for y in range(worldY / gfx.scale, minY / gfx.scale, -step)
+		c = gfx.pixel(gx, y)
+		if c != skyColor then return y * gfx.scale
+	end for
+	return minY
 end function
 
 scrollTo 2600
