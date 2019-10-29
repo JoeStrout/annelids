@@ -11,6 +11,7 @@ import "MenuUtils"
 import "Projectiles"
 import "Reticles"
 import "Worms"
+import "Spells"
 import "CastingUI"
 
 MenuDisplay = MenuUtils.MenuDisplay
@@ -42,6 +43,7 @@ select = function(worm)
 end function
 
 handleClick = function()
+	if CastingUI.isShown and CastingUI.handleClick then return
 	if selected and selected.handleClick then return
 	p = DisplayUtils.screenToWorld(mouse)
 	for worm in allWorms
@@ -66,7 +68,8 @@ while not key.pressed("escape")
 //		menu.show mouse.x, mouse.y
 //	end if
 	menu.update dt
-
+	CastingUI.update dt
+	
 	if mouse.button and not lastMouseButton then handleClick
 
 	lastMouseButton = mouse.button

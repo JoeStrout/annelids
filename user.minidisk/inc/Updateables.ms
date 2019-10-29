@@ -15,7 +15,11 @@ UpdateableSprite.init = function(x=0, y=0)
 	self.x = x
 	self.y = y
 	self.scale = Animated.normalScale
+
+	listUtil.removeVal disp.sprites, self	
 	disp.sprites.push self
+
+	listUtil.removeVal updateables, self
 	updateables.push self
 end function
 
