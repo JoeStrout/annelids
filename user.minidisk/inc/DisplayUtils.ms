@@ -69,7 +69,7 @@ end function
 
 // Drop a raw down from the given position, returning the Y coordinate
 // of the first terrain pixel found.  If none is found within maxDist,
-// then return worldY - maxDist.
+// then return null.
 dropRay = function(worldX, worldY, maxDist=42, step=2)
 	minY = worldY - maxDist
 	gx = worldX / gfx.scale
@@ -77,7 +77,7 @@ dropRay = function(worldX, worldY, maxDist=42, step=2)
 		c = gfx.pixel(gx, y)
 		if c != skyColor then return y * gfx.scale
 	end for
-	return minY
+	return null
 end function
 
 scrollTo 2600

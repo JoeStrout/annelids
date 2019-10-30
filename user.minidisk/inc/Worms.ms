@@ -18,6 +18,8 @@ globals.Worm = new Animated
 Worm.team = "brown"
 Worm.walkSpeed = 100
 Worm.selected = false
+Worm.vx = 0
+Worm.vy = 0
 
 Worm.init = function(x, y, team="brown")
 	super.init x, y
@@ -31,6 +33,17 @@ end function
 
 Worm.update = function(dt=0.1)
 	super.update dt
+	self.vy = self.vy + Projectiles.kGravity * dt
+	if self.vy < -500 then self.vy = -500  // (terminal velocity)
+	nextY = self.y + self.vy * dt
+	if nextY < self.y then
+		groundY = DisplayUtils.dropRay(self.x, self.y, self.y - nextY + 16)
+		if groundY != null then
+			self.vy = 0
+			nextY = groundY + 16
+		end if
+	end if
+	self.y = nextY
 end function
 
 Worm.select = function()

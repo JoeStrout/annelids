@@ -156,7 +156,9 @@ GasPuff.update = function(dt)
 	
 	// ooze slowly down a slope
 	leftY = DisplayUtils.dropRay(self.x-5, self.y)
+	if leftY == null then leftY = self.y - 100
 	rightY = DisplayUtils.dropRay(self.x+5, self.y)
+	if rightY == null then rightY = self.y - 100
 	targY = (leftY + rightY) * 0.5 + 20
 	self.y = self.y + 50 * dt * sign(targY - self.y)
 	self.x = self.x + 50 * dt * sign(leftY - rightY)
