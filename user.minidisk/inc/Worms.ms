@@ -14,12 +14,22 @@ for c in teamColors
 	wormAnims[c] = d
 end for
 
+healthBarImages = []
+loadHealthBars = function()
+	p = file.loadImage("ui/HealthBars.png")
+	for y in range(0, p.height-1, 5)
+		healthBarImages.push p.getImage(0, y, p.width, 5)
+	end for
+end function
+loadHealthBars
+
 globals.Worm = new Animated
 Worm.team = "brown"
 Worm.walkSpeed = 100
 Worm.selected = false
 Worm.vx = 0
 Worm.vy = 0
+Worm.health = 100
 
 Worm.init = function(x, y, team="brown")
 	super.init x, y
@@ -29,6 +39,10 @@ Worm.init = function(x, y, team="brown")
 	self.localBounds = new Bounds
 	self.localBounds.width = 32
 	self.localBounds.height = 32
+	self.health = round(rnd*100)
+	self.healthBar = new Sprite
+	disp.sprites.push self.healthBar
+	self.healthBar.image = healthBarImages[round(healthBarImages.len * self.health/100)]
 end function
 
 Worm.update = function(dt=0.1)
@@ -44,6 +58,8 @@ Worm.update = function(dt=0.1)
 		end if
 	end if
 	self.y = nextY
+	self.healthBar.x = self.x
+	self.healthBar.y = self.y + 32
 end function
 
 Worm.select = function()
