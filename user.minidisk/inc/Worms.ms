@@ -30,31 +30,55 @@ Worm.selected = false
 Worm.vx = 0
 Worm.vy = 0
 Worm.health = 100
+Worm.localBounds = new Bounds
+Worm.localBounds.width = 32
+Worm.localBounds.height = 32
 
 Worm.init = function(x, y, team="brown")
 	super.init x, y
 	self.team = team
 	self.anims = wormAnims[team]
 	self.curAnim = self.anims.idle
-	self.localBounds = new Bounds
-	self.localBounds.width = 32
-	self.localBounds.height = 32
-	self.health = round(rnd*100)
 	self.healthBar = new Sprite
 	disp.sprites.push self.healthBar
-	self.healthBar.image = healthBarImages[round(healthBarImages.len * self.health/100)]
+	self.updateHealthBar
+end function
+
+Worm.updateHealthBar = function()
+	if self.health >= 100 then
+		self.healthBar.imade = healthBarImages[-1]
+	else
+		self.healthBar.image = healthBarImages[round(healthBarImages.len * self.health/100)]
+	end if
+end function
+
+Worm.takeDamage = function(damage, impulse=null)
+	self.health = self.health - damage
+	if self.health <= 0 then
+		self.hide
+		listUtil.removeVal disp.sprites, self.healthBar
+	else
+		self.updateHealthBar
+		if impulse != null then
+			self.vx = self.vx + impulse.x
+			self.vy = self.vy + impulse.y
+		end if
+	end if
 end function
 
 Worm.update = function(dt=0.1)
 	super.update dt
 	self.vy = self.vy + Projectiles.kGravity * dt
 	if self.vy < -500 then self.vy = -500  // (terminal velocity)
+	self.x = self.x + self.vx * dt
 	nextY = self.y + self.vy * dt
 	if nextY < self.y then
 		groundY = DisplayUtils.dropRay(self.x, self.y, self.y - nextY + 16)
 		if groundY != null then
 			self.vy = 0
 			nextY = groundY + 16
+			self.vx = self.vx / 2
+			if abs(self.vx) < 1 then self.vx = 0
 		end if
 	end if
 	self.y = nextY

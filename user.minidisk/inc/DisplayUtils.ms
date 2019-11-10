@@ -120,15 +120,16 @@ digTerrain = function(x, y, radius=40)
 end function
 
 Explosion = new spriteControllers.Animated
-Explosion.init = function(x, y)
+Explosion.init = function(x, y, radius)
 	self.curAnim = spriteControllers.newAnimation(boomFrames)
 	self.curAnim.fps = 20
 	self.curAnim.loop = false
 	super.init x, y
-	self.scale = 2
+	self.scale = radius / 64
 	self.dug = false
 	boomSnd.play	
 end function
+
 Explosion.update = function(dt)
 	frame = self.curAnim.curFrame
 	if frame == 4 and not self.dug then
@@ -141,7 +142,7 @@ Explosion.update = function(dt)
 	end if
 end function
 
-doBoom = function(x,y)
+doBoom = function(x,y, radius)
 	boom = new Explosion
-	boom.init x, y
+	boom.init x, y, radius
 end function

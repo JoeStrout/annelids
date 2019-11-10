@@ -1,5 +1,7 @@
 // This module defines the Projectile class, for anything you throw.
 
+import "mathUtil"
+
 kGravity = -5000
 
 globals.Projectile = new UpdateableSprite
@@ -10,6 +12,9 @@ Projectile.rotate = true		// whether to rotate to face direction of travel
 Projectile.angleOffset = 0		// amount to add to rotation, in degrees
 Projectile.normalScale = [1, 1]
 Projectile.flippedScale = [-1, 1]
+Projectile.boomRadius = 50
+Projectile.boomDamage = 80
+Projectile.boomForce = 500
 
 rad2deg = 180/pi
 
@@ -38,7 +43,24 @@ Projectile.update = function(dt=0.1)
 end function
 
 Projectile.explode = function()
-	DisplayUtils.doBoom self.x, self.y
+	effectiveRadius = self.boomRadius + 20	// (accounting for worm radius and shockwave)
+	for w in allWorms
+		dist = mathUtil.distance(w, self)
+		if dist < effectiveRadius then
+			// apply damage and push at 100% at half the effective radius or less,
+			// scaling to 0 at full radius.			
+			if dist < effectiveRadius * 0.5 then
+				scale = 1
+			else
+				scale = (1 - dist/effectiveRadius) * 2
+			end if
+			impulse = {}
+			impulse.x = scale * (w.x - self.x) * self.boomForce / dist
+			impulse.y = scale * (w.y - self.y) * self.boomForce / dist + 100
+			w.takeDamage self.boomDamage * scale, impulse
+		end if
+	end for
+	DisplayUtils.doBoom self.x, self.y, self.boomRadius
 	self.hide
 end function
 

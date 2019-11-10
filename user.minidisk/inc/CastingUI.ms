@@ -16,25 +16,15 @@ for p in elementPics
 	elementSprites.push spr
 end for
 
-// Having to do this module trick is a bit lame.  Need to think about
-// how to get something like this built-in -- access to the "file" scope,
-// without leaking into the real global scope.
-module = {}
-module.isShown = false
-module.pressed = null
-module.caster = null
-// Hmm... could we do this implicitly by just adding "module = locals"?!
-
+isShown = false
+pressed = null
+caster = null
 
 // little sprites representing the elements currently added to the spell:
 selectedElementIcons = []
 
-isShown = function()
-	return module.isShown
-end function
-
 show = function(caster)
-	if module.isShown then hide
+	if isShown then hide
 	r = 80
 	for i in range(0,7)
 		ang = pi/2 + i*pi/4
@@ -43,12 +33,12 @@ show = function(caster)
 		spr.y = caster.y + r * sin(ang)
 		disp.sprites.push spr
 	end for
-	module.isShown = true
-	module.caster = caster
+	outer.isShown = true
+	outer.caster = caster
 end function
 
 hideButtons = function()
-	if not module.isShown then return
+	if not isShown then return
 	for spr in elementSprites
 		listUtil.removeVal disp.sprites, spr
 	end for
@@ -59,7 +49,7 @@ hide = function()
 	while selectedElementIcons
 		listUtil.removeVal disp.sprites, selectedElementIcons.pop
 	end while
-	module.isShown = false
+	outer.isShown = false
 end function
 
 kPressedTint = "#888888"
@@ -79,8 +69,8 @@ addElement = function(elemSprite)
 	// now arrange all the icons below our caster position
 	icons = selectedElementIcons
 	for i in icons.indexes
-		icons[i].x = module.caster.x + (i-(icons.len-1)/2) * 20
-		icons[i].y = module.caster.y - 25
+		icons[i].x = caster.x + (i-(icons.len-1)/2) * 20
+		icons[i].y = caster.y - 25
 	end for
 	
 	// and if we've hit the limit (3 elements), start casting!
@@ -93,21 +83,21 @@ startCasting = function()
 	for spr in selectedElementIcons
 		elements.push spr.name
 	end for
-	Spells.startCasting module.caster, elements
+	Spells.startCasting caster, elements
 end function
 
 handleClick = function()
-	if not module.isShown then return false
+	if not isShown then return false
 	p = DisplayUtils.screenToWorld(mouse)
 	// Press the selected element button
 	for spr in elementSprites
 		if spr.contains(p) then
 			spr.tint = kPressedTint
-			module.pressed = spr
+			outer.pressed = spr
 			break
 		end if
 	end for
-	if not module.pressed then
+	if not pressed then
 		// If we hit none of those, then cancel or start casting
 		if selectedElementIcons then startCasting else hide
 	end if
@@ -115,22 +105,22 @@ handleClick = function()
 end function
 
 update = function(dt)
-	if module.pressed then
+	if pressed then
 		// Update the pressed element tint while the mouse button is down;
 		// add it if the mouse is released while the element is tinted.
 		if mouse.button then
-			if module.pressed.contains(DisplayUtils.screenToWorld(mouse)) then
-				module.pressed.tint = kPressedTint
+			if pressed.contains(DisplayUtils.screenToWorld(mouse)) then
+				pressed.tint = kPressedTint
 			else
-				module.pressed.tint = color.white
+				pressed.tint = color.white
 			end if
 		else
 			// mouse released
-			if module.pressed.tint == kPressedTint then
-				addElement module.pressed
-				module.pressed.tint = color.white
+			if pressed.tint == kPressedTint then
+				addElement pressed
+				pressed.tint = color.white
 			end if
-			module.pressed = null
+			outer.pressed = null
 		end if
 	end if
 end function
