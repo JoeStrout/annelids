@@ -5,16 +5,6 @@
 
 clear
 
-text.row = 25
-text.color = color.yellow
-print "ANNELIDS"
-text.color = color.gray
-print "very early prototyping work"
-//print "click to make a crater; right-click to open radial menu"
-print "use mouse to shoot, arrow keys to scroll"
-_printMark "(press `Esc` to exit)"
-text.color = color.orange
-
 globals.disp = display(4)  // (sprites)
 
 resolveImage = function(imageOrPath)

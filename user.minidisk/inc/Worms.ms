@@ -1,6 +1,28 @@
-// This module adds the Worm class, which represents any worm in the game.
+// This module adds the Worm class, which represents any worm in the game2
+// and the related Team class, which represents each team of worms.
 
 teamColors = "blue brown green orange pink".split
+
+Team = {}
+Team.color = "gray"
+Team.actionPoints = 4
+Team.worms = []
+Team.addWorm = function(worm)
+	self.worms.push worm
+	worm.team = self
+end function
+Team.removeWorm = function(worm)
+	self.worms.removeVal worm
+	worm.team = null
+end function
+
+teams = []
+teams.push new Team
+teams[-1].color = "blue"
+teams.push new Team
+teams[-1].color = "orange"
+
+
 
 wormAnims = {}  // key: team color; value: map containing animations by name
 for c in teamColors
@@ -24,7 +46,7 @@ end function
 loadHealthBars
 
 globals.Worm = new Animated
-Worm.team = "brown"
+Worm.team = null
 Worm.walkSpeed = 100
 Worm.selected = false
 Worm.vx = 0
@@ -34,10 +56,10 @@ Worm.localBounds = new Bounds
 Worm.localBounds.width = 32
 Worm.localBounds.height = 32
 
-Worm.init = function(x, y, team="brown")
+Worm.init = function(x, y, team)
 	super.init x, y
-	self.team = team
-	self.anims = wormAnims[team]
+	team.addWorm self
+	self.anims = wormAnims[team.color]
 	self.curAnim = self.anims.idle
 	self.healthBar = new Sprite
 	disp.sprites.push self.healthBar

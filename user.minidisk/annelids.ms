@@ -13,6 +13,7 @@ import "Reticles"
 import "Worms"
 import "Spells"
 import "CastingUI"
+import "StatusUI"
 
 MenuDisplay = MenuUtils.MenuDisplay
 // Prepare a menu, but don't show it yet
@@ -22,14 +23,14 @@ allWorms = []
 selected = null
 for i in range(0,3)
 	worm = new Worm
-	worm.init 2600+720 - 50*i, 288, "blue"
+	worm.init 2600+720 - 50*i, 288, Worms.teams[0]
 	worm.scale = Animated.flippedScale
 	allWorms.push worm
 end for
 
 for i in range(0,3)
 	worm = new Worm
-	worm.init 2600+120 + 50*i, 370, "orange"
+	worm.init 2600+120 + 50*i, 370, Worms.teams[1]
 	worm.scale = Animated.normalScale
 	allWorms.push worm
 end for
