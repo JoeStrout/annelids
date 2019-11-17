@@ -44,7 +44,7 @@ reticle.update = function(dt=0.1)
 	if self.isCharging then
 		if not mouse.button then
 			// Fire!
-			listUtil.removeVal disp.sprites, chargeInd
+			disp.sprites.removeVal chargeInd
 			self.isCharging = false
 			self.fire dx, dy, self.chargeTime
 			chargeSound.stop

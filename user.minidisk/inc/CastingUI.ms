@@ -40,14 +40,14 @@ end function
 hideButtons = function()
 	if not isShown then return
 	for spr in elementSprites
-		listUtil.removeVal disp.sprites, spr
+		disp.sprites.removeVal spr
 	end for
 end function
 
 hide = function()
 	hideButtons
 	while selectedElementIcons
-		listUtil.removeVal disp.sprites, selectedElementIcons.pop
+		disp.sprites.removeVal selectedElementIcons.pop
 	end while
 	outer.isShown = false
 end function

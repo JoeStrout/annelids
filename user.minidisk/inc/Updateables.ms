@@ -16,16 +16,16 @@ UpdateableSprite.init = function(x=0, y=0)
 	self.y = y
 	self.scale = Animated.normalScale
 
-	listUtil.removeVal disp.sprites, self	
+	disp.sprites.removeVal self	
 	disp.sprites.push self
 
-	listUtil.removeVal updateables, self
+	updateables.removeVal self
 	updateables.push self
 end function
 
 UpdateableSprite.hide = function()
-	listUtil.removeVal disp.sprites, self
-	listUtil.removeVal updateables, self
+	disp.sprites.removeVal self
+	updateables.removeVal self
 end function
 
 spriteControllers.Animated.__isa = UpdateableSprite
