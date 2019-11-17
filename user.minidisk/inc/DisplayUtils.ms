@@ -86,7 +86,7 @@ boomFrames = getAllFrames("sprites/explosion.png", 128)
 // in buffer coordinates, not screen or sprite coordinates.
 digTerrain = function(x, y, radius=40)
 	innerR = radius
-	outerR = radius + 5
+	outerR = radius + 4
 	glowColor = color.yellow
 	gfx.fillEllipse x-innerR, y-innerR, innerR*2, innerR*2, skyColor
 
@@ -102,7 +102,7 @@ digTerrain = function(x, y, radius=40)
 			if gfx.pixel(x-px, py) != skyColor then gfx.setPixel x-px, py, glowColor
 		end for
 		dt = time - lastTime
-		if dt > 0.01 then
+		if dt > 0.1 then
 			lastTime = time
 			Updateables.update dt
 		end if			

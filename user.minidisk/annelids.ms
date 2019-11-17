@@ -7,6 +7,7 @@ end for
 import "Updateables"
 import "DisplayUtils"
 import "listUtil"
+import "stringUtil"
 import "MenuUtils"
 import "Projectiles"
 import "Reticles"
@@ -35,6 +36,8 @@ for i in range(0,3)
 	allWorms.push worm
 end for
 
+curTeam = Worms.teams[0]
+
 select = function(worm)
 	if selected then selected.deselect
 	menu.hide
@@ -44,6 +47,14 @@ select = function(worm)
 end function
 
 handleClick = function()
+	// here's a quick hack to detect the "done" button since I'm out of
+	// time for today:
+	if mouse.x > 875 and mouse.y < 30 then
+		globals.curTeam = Worms.teams[1 - Worms.teams.indexOf(curTeam)]
+		StatusUI.refresh
+		select null
+	end if
+	
 	if CastingUI.isShown and CastingUI.handleClick then return
 	if selected and selected.handleClick then return
 	p = DisplayUtils.screenToWorld(mouse)
@@ -55,6 +66,8 @@ handleClick = function()
 	end for
 	select null
 end function
+
+StatusUI.refresh
 
 // Main loop
 lastTime = time
@@ -79,6 +92,8 @@ end while
 
 key.clear
 text.clear
-text.row = 25
+text.row = 20
+text.column = 0
+text.color = color.orange
 _printMark "Enter `run` to run again, or `update` to continue for just one step."
 update = @Updateables.update

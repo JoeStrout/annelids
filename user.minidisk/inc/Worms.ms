@@ -31,6 +31,7 @@ for c in teamColors
 	d.sheet = sheet
 	d.slither = spriteControllers.newAnimation(getFrames(sheet, 0, 0, 11, 42, 42))
 	d.idle = spriteControllers.newAnimation(getFrames(sheet, 1, 0, 8, 42, 42))
+	d.idle.fps = 5
 	d.jumpUp = spriteControllers.newAnimation(getFrames(sheet, 2, 0, 7))
 	d.jumpDown = spriteControllers.newAnimation(getFrames(sheet, 2, 8, 5))
 	wormAnims[c] = d
@@ -59,8 +60,16 @@ Worm.localBounds.height = 32
 Worm.init = function(x, y, team)
 	super.init x, y
 	team.addWorm self
-	self.anims = wormAnims[team.color]
+	self.anims = {}
+	for kv in wormAnims[team.color]
+		if kv.value isa Animation then
+			self.anims[kv.key] = kv.value.clone
+		else
+			self.anims[kv.key] = kv.value
+		end if
+	end for
 	self.curAnim = self.anims.idle
+	self.curAnim.fps = 4 + rnd*2
 	self.healthBar = new Sprite
 	disp.sprites.push self.healthBar
 	self.updateHealthBar
@@ -68,7 +77,7 @@ end function
 
 Worm.updateHealthBar = function()
 	if self.health >= 100 then
-		self.healthBar.imade = healthBarImages[-1]
+		self.healthBar.image = healthBarImages[-1]
 	else
 		self.healthBar.image = healthBarImages[round(healthBarImages.len * self.health/100)]
 	end if
@@ -86,6 +95,7 @@ Worm.takeDamage = function(damage, impulse=null)
 			self.vy = self.vy + impulse.y
 		end if
 	end if
+	StatusUI.refresh
 end function
 
 Worm.update = function(dt=0.1)
