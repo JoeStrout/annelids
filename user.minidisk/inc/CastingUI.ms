@@ -25,16 +25,16 @@ selectedElementIcons = []
 
 show = function(caster)
 	if isShown then hide
+	outer.isShown = true
+	outer.caster = caster
 	r = 80
 	for i in range(0,7)
 		ang = pi/2 + i*pi/4
 		spr = elementSprites[i]
+		disp.sprites.push spr
 		spr.x = caster.x + r * cos(ang)
 		spr.y = caster.y + r * sin(ang)
-		disp.sprites.push spr
 	end for
-	outer.isShown = true
-	outer.caster = caster
 end function
 
 hideButtons = function()
@@ -73,8 +73,12 @@ addElement = function(elemSprite)
 		icons[i].y = caster.y - 25
 	end for
 	
-	// and if we've hit the limit (3 elements), start casting!
-	if icons.len > 2 then startCasting
+	// decrement player's AP
+	curTeam.actionPoints = curTeam.actionPoints - 1
+	StatusUI.refresh
+	
+	// and if we've hit the limit (3 elements or out of AP), start casting!
+	if icons.len > 2 or curTeam.actionPoints == 0 then startCasting
 end function
 
 startCasting = function()
@@ -84,6 +88,7 @@ startCasting = function()
 		elements.push spr.name
 	end for
 	Spells.startCasting caster, elements
+	if selected then selected.deselect
 end function
 
 handleClick = function()
@@ -94,10 +99,12 @@ handleClick = function()
 		if spr.contains(p) then
 			spr.tint = kPressedTint
 			outer.pressed = spr
+			//print "Found hit at " + spr.x + "," + spr.y
 			break
 		end if
 	end for
 	if not pressed then
+		//print "No button contains " + p
 		// If we hit none of those, then cancel or start casting
 		if selectedElementIcons then startCasting else hide
 	end if

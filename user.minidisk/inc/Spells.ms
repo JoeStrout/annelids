@@ -77,8 +77,7 @@ end function
 
 startCasting = function(worm, elements)
 	effect = mainEffect(elements)
-	text.row = 21
-	print "Casting: " + elements.join("+") + " with main effect: " + effect + " "*20
+	StatusUI.drawEvent effect
 	spell = new Spell
 	spell.init worm, elements
 	reticle.init worm.x, worm.y

@@ -5,10 +5,14 @@ teamColors = "blue brown green orange pink".split
 
 Team = {}
 Team.color = "gray"
-Team.actionPoints = 4
-Team.worms = []
+Team.actionPoints = 0
+Team.worms = null
 Team.addWorm = function(worm)
-	self.worms.push worm
+	if self.worms == null then
+		self.worms = [worm]
+	else
+		self.worms.push worm
+	end if
 	worm.team = self
 end function
 Team.removeWorm = function(worm)
@@ -76,11 +80,9 @@ Worm.init = function(x, y, team)
 end function
 
 Worm.updateHealthBar = function()
-	if self.health >= 100 then
-		self.healthBar.image = healthBarImages[-1]
-	else
-		self.healthBar.image = healthBarImages[round(healthBarImages.len * self.health/100)]
-	end if
+	frame = round(healthBarImages.len * self.health/100)
+	if frame >= healthBarImages.len then frame = -1
+	self.healthBar.image = healthBarImages[frame]
 end function
 
 Worm.takeDamage = function(damage, impulse=null)

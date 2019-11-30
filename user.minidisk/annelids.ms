@@ -36,8 +36,6 @@ for i in range(0,3)
 	allWorms.push worm
 end for
 
-curTeam = Worms.teams[0]
-
 select = function(worm)
 	if selected then selected.deselect
 	menu.hide
@@ -46,19 +44,25 @@ select = function(worm)
 	selected = worm
 end function
 
+endTurn = function()
+	globals.curTeam = Worms.teams[1 - Worms.teams.indexOf(curTeam)]
+	curTeam.actionPoints = curTeam.actionPoints + 4
+	StatusUI.refresh
+	select null
+end function
+
 handleClick = function()
-	// here's a quick hack to detect the "done" button since I'm out of
-	// time for today:
-	if mouse.x > 875 and mouse.y < 30 then
-		globals.curTeam = Worms.teams[1 - Worms.teams.indexOf(curTeam)]
-		StatusUI.refresh
-		select null
-	end if
-	
+	if StatusUI.handleClick then return	
 	if CastingUI.isShown and CastingUI.handleClick then return
-	if selected and selected.handleClick then return
+	if selected then
+		if selected.handleClick then return
+		selected.deselect
+	end if
+	// Now we're going to check for worms... but only if we're not
+	// out of AP; and only allow selection of current team worms.
+	if curTeam.actionPoints < 1 then return
 	p = DisplayUtils.screenToWorld(mouse)
-	for worm in allWorms
+	for worm in curTeam.worms
 		if worm.contains(p) then
 			select worm
 			return
@@ -67,7 +71,9 @@ handleClick = function()
 	select null
 end function
 
-StatusUI.refresh
+// Start-of-game setup
+curTeam = Worms.teams[Worms.teams.len-1]
+endTurn	// (makes sure everything is set up for team 0)
 
 // Main loop
 lastTime = time
@@ -77,10 +83,6 @@ while not key.pressed("escape")
 	lastTime = time
 	Updateables.update dt
 
-//	ctrl = key.pressed("left ctrl") or key.pressed("right ctrl")
-//	if (mouse.button(1) or (mouse.button and ctrl)) and not menu.isVisible then
-//		menu.show mouse.x, mouse.y
-//	end if
 	menu.update dt
 	CastingUI.update dt
 	
@@ -95,5 +97,6 @@ text.clear
 text.row = 20
 text.column = 0
 text.color = color.orange
+text.delimiter = char(13)
 _printMark "Enter `run` to run again, or `update` to continue for just one step."
 update = @Updateables.update

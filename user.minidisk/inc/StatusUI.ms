@@ -23,6 +23,7 @@ drawTeamInfo = function(team, column)
 	end if
 	text.column = column - 1
 	print name.pad(16)
+	text.row = 24
 	text.column = column
 	print ("Worms:" + team.worms.len + "  AP:" + team.actionPoints).pad(15)
 	text.color = color.orange
@@ -37,7 +38,6 @@ drawWidgets = function()
 	text.column = 62
 	text.delimiter = ""
 	text.print specialChars.leftButtonCap + "DONE"
-	text.delimiter = char(13)
 	text.setCell 67,0, specialChars.rightButtonCap
 	text.setCellColor 67, 0, text.backColor
 	text.setCellBackColor 67, 0, text.color
@@ -45,6 +45,27 @@ drawWidgets = function()
 	text.row = 12
 end function
 
+handleClick = function()
+	// Handle a click, if it's on any of our clickable stuff, and return true.
+	// Otherwise return false.
+	if mouse.x > 875 and mouse.y < 30 then	// "DONE" button
+		// ToDo: we really should do proper button highlighting & tracking here.
+		// But for now we'll just react to the mouse-down.
+		endTurn
+		return true
+	end if
+	return false
+end function
+
+drawEvent = function(msg)
+	// draw a short event string at the bottom of the screen
+	// (leaving room for the "DONE" button)
+	text.color = color[curTeam.color]
+	text.delimiter = ""
+	text.row = 0
+	text.column = 0
+	text.print " "*(34-msg.len/2) + msg + " "*(25-msg.len/2)
+end function
 
 refresh = function()
 	drawTeamInfo Worms.teams[0], 5
@@ -61,3 +82,4 @@ display(2).mode = displayMode.text
 globals.text = display(2)
 
 text.clear
+text.delimiter = ""
