@@ -35,6 +35,13 @@ show = function(caster)
 		spr.x = caster.x + r * cos(ang)
 		spr.y = caster.y + r * sin(ang)
 	end for
+	// There is a bug in Mini Micro v0.8, where moving a sprite that has been
+	// hidden does not update the bounds.  To work around it, we need to yield
+	// a frame, and then poke the position again.  (Fixed in MiniMicro v0.9.)
+	yield
+	for spr in elementSprites
+		spr.x = spr.x
+	end for
 end function
 
 hideButtons = function()
