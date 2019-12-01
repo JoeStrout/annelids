@@ -106,12 +106,10 @@ handleClick = function()
 		if spr.contains(p) then
 			spr.tint = kPressedTint
 			outer.pressed = spr
-			//print "Found hit at " + spr.x + "," + spr.y
 			break
 		end if
 	end for
 	if not pressed then
-		//print "No button contains " + p
 		// If we hit none of those, then cancel or start casting
 		if selectedElementIcons then startCasting else hide
 	end if

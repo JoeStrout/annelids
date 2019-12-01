@@ -64,6 +64,43 @@ effectTable[kDeath] = [kPoisonGas, kChaos, kColdAtk, kAcidRain, kTrap, kDeathTou
 effectTable[kHot] = [kFlame, kFire, kChaos, kSteam, kLava, kExplosion, kHeat, kMeteor]
 effectTable[kSolid] = [kShield, kHand, kIce, kChaos, kStone, kAnvil, kMeteor, kBoulder]
 
+// Detailed effects:
+detailTable = {}  // key: main effect; value: list of detail effects, in order
+kSummonTornado = "Summon Tornado"
+kGaia = "Gaia"
+kSnowGoon = "Summon Snow Goon"
+kWaterElemental = "Summon Water Elemental"
+kEarthElemental = "Summon Earth Elemental"
+kGrimReaper = "Summon Death"
+kFireElemental = "Summon Fire Elemental"
+kStatue = "Summon Statue"
+detailTable[kSummon] = [kSummonTornado, kGaia, kSnowGoon, kWaterElemental, 
+	kEarthElemental, kGrimReaper, kFireElemental, kStatue]
+
+kLiftingHand = "Lifting Hand"
+kInterposingHand = "Interposing Hand"
+kChillingHand = "Chilling Hand"
+kPushingHand = "Pushing Hand"
+kHoldingHand = "Holding Hand"
+kSquashingHand = "Squashing Hand"
+kFlamingHand = "Flaming Hand of Fiery Doom"
+kPunchingHand = "Punching Hand"
+detailTable[kHand] = [kLiftingHand, kInterposingHand, kChillingHand, kPushingHand,
+	kHoldingHand, kSquashingHand, kFlamingHand, kPunchingHand]
+
+kWindTrap = "Wind Trap"
+kVineTrap = "Vine Trap"
+kColdTrap = "Cold Trap"
+kBucketTrap = "Bucket Trap"
+kPitTrap = "Pit Trap"
+kDeathTrap = "Death Trap"
+kMine = "Mine"
+kBearTrap = "Bear Trap"
+detailTable[kTrap] = [kWindTrap, kVineTrap, kColdTrap, kBucketTrap, 
+	kPitTrap, kDeathTrap, kMine, kBearTrap]
+
+// mainEffect: return the primary effect of the chosen elements.  This is determined
+// by the first two elements in the list.
 mainEffect = function(elements)
 	if elements.len == 1 then
 		// If only one element, the main effect is the same as if you double it.
@@ -75,8 +112,18 @@ mainEffect = function(elements)
 	return effectTable[elements[0]][elem2idx]
 end function
 
-startCasting = function(worm, elements)
+// fullEffect: return the complete, detailed effect of the chosen elements.
+// This includes the main effect (determined by the first two) and the variation
+// (determined by the third).
+fullEffect = function(elements)
 	effect = mainEffect(elements)
+	if elements.len < 3 or not detailTable.hasIndex(effect) then return effect
+	lastIdx = elementNames.indexOf(elements[2])
+	return detailTable[effect][lastIdx]
+end function
+
+startCasting = function(worm, elements)
+	effect = fullEffect(elements)
 	StatusUI.drawEvent effect
 	spell = new Spell
 	spell.init worm, elements
