@@ -285,3 +285,22 @@ SnowProjectile.explode = function()
 end function
 effectProjectiles[kSnow] = SnowProjectile
 
+GroundProjectile = new Projectile
+GroundProjectile.sound = file.loadSound("sounds/terrain.wav")
+GroundProjectile.pieces = []
+for i in range(1,6)
+	GroundProjectile.pieces.push file.loadImage("levels/GroundPiece" + i + ".png")
+end for
+GroundProjectile.explode = function()
+	self.hide
+	self.sound.play
+	y = self.y / gfx.scale
+	for i in range(2+2*rnd)
+		x = self.x / gfx.scale + round(rnd*60 - 30)
+		img = self.pieces.any
+		gfx.drawImage img, x - img.width/2, y - img.height/2
+		y = y + 5 + round(rnd*20)
+	end for
+end function
+effectProjectiles[kTerrain] = GroundProjectile
+
