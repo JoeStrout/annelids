@@ -48,6 +48,7 @@ kHand = "Hand"
 kAnvil = "Anvil"
 kSummon = "Summon"
 kDeathTouch = "Death Touch"
+kTeleport = "Teleport"
 
 // Main-effect table: when you change this, be sure to change it both ways
 // so that order of elements doesn't matter!
@@ -55,8 +56,8 @@ kDeathTouch = "Death Touch"
 //		kAir, kLife, kCold, kLiquid, kGround, kDeath, kHot, kSolid
 
 effectTable = {}
-effectTable[kAir] = [kWind, kLightning, kSnow, kRain, kChaos, kPoisonGas, kFlame, kShield]
-effectTable[kLife] = [kLightning, kSummon, kSickness, kHeal, kPlants, kChaos, kFire, kHand]
+effectTable[kAir] = [kWind, kTeleport, kSnow, kRain, kChaos, kPoisonGas, kFlame, kShield]
+effectTable[kLife] = [kTeleport, kSummon, kSickness, kHeal, kPlants, kChaos, kFire, kHand]
 effectTable[kCold] = [kSnow, kSickness, kFreeze, kSleet, kGrave, kColdAtk, kChaos, kIce]
 effectTable[kLiquid] = [kRain, kHeal, kSleet, kFlood, kMud, kAcidRain, kSteam, kChaos]
 effectTable[kGround] = [kChaos, kPlants, kGrave, kMud, kTerrain, kTrap, kLava, kStone]
@@ -98,6 +99,14 @@ kMine = "Mine"
 kBearTrap = "Bear Trap"
 detailTable[kTrap] = [kWindTrap, kVineTrap, kColdTrap, kBucketTrap, 
 	kPitTrap, kDeathTrap, kMine, kBearTrap]
+
+kTyphoon = "Typhoon"
+kFrogs = "Frogs"
+kDeluge = "Deluge"
+kFlood = "Flood"
+kNapalm = "Napalm"
+kHail = "Hail"
+detailTable[kRain] = [kTyphoon, kFrogs, kSleet, kDeluge, kFlood, kLightning, kNapalm, kHail]
 
 // mainEffect: return the primary effect of the chosen elements.  This is determined
 // by the first two elements in the list.
@@ -150,6 +159,7 @@ Spell.fire = function(dx, dy, chargeTime)
 	if effectProjectiles.hasIndex(self.effect) then projClass = effectProjectiles[self.effect]
 	proj = new projClass
 	proj.init self.caster.x, self.caster.y
+	proj.spell = self
 	proj.vx = dx * 2000 * chargeTime
 	proj.vy = dy * 2000 * chargeTime
 	return proj
@@ -220,4 +230,58 @@ HandProjectile = new Projectile
 HandProjectile.image = file.loadImage("sprites/fist.png")
 HandProjectile.angleOffset = -45
 effectProjectiles[kHand] = HandProjectile
+
+TeleportProjectile = new Projectile
+TeleportProjectile.sound = file.loadSound("sounds/teleport.wav")
+TeleportProjectile.explode = function()
+	groundY = DisplayUtils.dropRay(self.x, self.y, self.y - 2, 16) - 10
+	if groundY == null then groundY = self.y
+	self.spell.caster.x = self.x
+	self.spell.caster.y = groundY
+
+	self.sound.play
+	self.hide
+end function
+effectProjectiles[kTeleport] = TeleportProjectile
+
+SnowProjectile = new Projectile
+SnowProjectile.explode = function()
+	self.hide
+	snow = []
+	toSpawn = 600
+	while toSpawn > 0 or snow
+		if toSpawn > 0 then
+			x = round(self.x / gfx.scale + rnd * 100 - 50)
+			y = round(self.y / gfx.scale + rnd * 100)
+			if gfx.pixel(x,y) == skyColor then
+				snow.push {"x":x, "y":y}
+				toSpawn = toSpawn - 1
+			end if
+		end if
+		if snow.len <= 0 then continue		
+		for i in range(snow.len-1)
+			p = snow[i]
+			x = p.x + (rnd < 0.3) - (rnd < 0.3)
+			y = p.y - 1
+			if gfx.pixel(x,y) != skyColor then
+				// Maybe hit something... try a bit to the left or right
+				if gfx.pixel(x-1,y) == skyColor then
+					x = x - 1
+				else if gfx.pixel(x+1,y) == skyColor then
+					x = x + 1
+				else
+					// failing that, just stick
+					snow.remove i
+				end if
+			else
+				gfx.setPixel p.x, p.y, skyColor
+				gfx.setPixel x, y, color.white
+				p.x = x
+				p.y = y
+			end if
+		end for
+		yield
+	end while
+end function
+effectProjectiles[kSnow] = SnowProjectile
 
