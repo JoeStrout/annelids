@@ -81,6 +81,7 @@ lastMouseButton = mouse.button
 while not key.pressed("escape")
 	dt = time - lastTime
 	lastTime = time
+	if dt > 0.02 then dt = 0.02  // step limit, prevents wonkiness on slow systems
 	Updateables.update dt
 
 	menu.update dt
