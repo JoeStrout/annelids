@@ -124,7 +124,7 @@ Explosion.update = function(dt)
 	frame = self.curAnim.curFrame
 	if frame == 4 and not self.dug then
 		self.dug = true
-		digTerrain self.x/gfx.scale, self.y/gfx.scale
+		digTerrain self.x/gfx.scale, self.y/gfx.scale, 40 * self.scale
 	else if frame == self.curAnim.frames.len-1 then
 		self.hide
 	else

@@ -49,6 +49,7 @@ hideButtons = function()
 	for spr in elementSprites
 		disp.sprites.removeVal spr
 	end for
+	outer.isShown = false
 end function
 
 hide = function()

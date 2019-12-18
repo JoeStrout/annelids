@@ -304,3 +304,70 @@ GroundProjectile.explode = function()
 end function
 effectProjectiles[kTerrain] = GroundProjectile
 
+easeFunc = function(t, length=1)
+	// ease from 0 to 1 as t goes from 0 to length
+	x = sin(t/length * pi/2)
+	return x*x
+end function
+ 
+easeInOutFunc = function(t, totalT=1, fullT=0.5)
+	// function that eases up to 1, stays there over fullT,
+	// and then eases back down to 0 at totalT.
+	t0 = (totalT - fullT)/2
+	if t < t0 then return easeFunc(t, t0)
+	t1 = (totalT + fullT)/2
+	if t > t1 then return 1 - easeFunc(t - t1, t0)
+	return 1
+end function
+
+AcidRainCloud = new UpdateableSprite
+AcidRainCloud.image = file.loadImage("sprites/cloud1.png")
+AcidRainCloud.tint = "#FFFFFFCC"
+AcidRainCloud.init = function(x, y)
+	super.init x, y
+	self.scale = 0
+	self.age = 0
+	self.rainTime = 3
+	self.ageAtNextDrop = 3.2
+end function
+AcidRainCloud.update = function(dt)
+	self.age = self.age + dt
+	self.scale = self.age / 3
+	if self.scale > 1 then
+		self.scale = 1
+		self.x = self.x - 8 * dt
+		if self.age > 3+self.rainTime then
+			self.tint = color.rgba(255,255,255, 200 - 200*(self.age-3-self.rainTime)/2)
+			if self.age > 5+self.rainTime then self.hide
+		else if self.age > self.ageAtNextDrop then
+			drop = new AcidRainDrop
+			drop.init self.x + 120 * (rnd-0.5), self.y - 40		
+			rainRate = easeInOutFunc(self.age-3, self.rainTime, self.rainTime-1)
+			self.ageAtNextDrop = self.ageAtNextDrop + (1.1 - rainRate) * rnd
+		end if
+	else
+		self.y = self.y + 65 * dt
+		self.x = self.x + 15 * dt
+	end if
+end function
+
+AcidRainDrop = new Projectile
+AcidRainDrop.image = file.loadImage("sprites/raindrop.png")
+AcidRainDrop.vx = -8*60
+AcidRainDrop.vy = -2*60
+AcidRainDrop.rotate = false
+AcidRainDrop.boomRadius = 2
+AcidRainDrop.boomDamage = 10
+AcidRainDrop.boomForce = 0
+
+AcidRainProjectile = new BoltProjectile
+AcidRainProjectile.tint = "#880000"
+AcidRainProjectile.sound = file.loadSound("sounds/splat.wav")
+AcidRainProjectile.explode = function()
+	self.sound.play
+	cloud = new AcidRainCloud
+	cloud.init self.x, self.y
+	if self.spell.elements.len > 2 then cloud.rainTime = 8
+	self.hide
+end function
+effectProjectiles[kAcidRain] = AcidRainProjectile
