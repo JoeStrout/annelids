@@ -112,7 +112,13 @@ handleClick = function()
 	end for
 	if not pressed then
 		// If we hit none of those, then cancel or start casting
-		if selectedElementIcons then startCasting else hide
+		if selectedElementIcons then
+			startCasting
+		else
+			hide
+			if caster.contains(p) then return caster.handleClick
+			return false
+		end if
 	end if
 	return true
 end function

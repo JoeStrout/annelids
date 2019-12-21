@@ -56,6 +56,7 @@ handleClick = function()
 	if CastingUI.isShown and CastingUI.handleClick then return
 	if selected then
 		if selected.handleClick then return
+		print "Deselecting!"
 		selected.deselect
 	end if
 	// Now we're going to check for worms... but only if we're not
