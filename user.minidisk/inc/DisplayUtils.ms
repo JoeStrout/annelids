@@ -70,6 +70,19 @@ dropRay = function(worldX, worldY, maxDist=42, step=2)
 	return null
 end function
 
+// Cast a raw up from the given position, returning the Y coordinate
+// of the first terrain pixel found.  If none is found within maxDist,
+// then return null.
+castRayUp = function(worldX, worldY, maxDist=42, step=2)
+	maxY = worldY + maxDist
+	gx = worldX / gfx.scale
+	for y in range(worldY / gfx.scale, maxY / gfx.scale, step)
+		c = gfx.pixel(gx, y)
+		if c != skyColor then return y * gfx.scale
+	end for
+	return null
+end function
+
 scrollTo 2600
 
 keyScroller = {}

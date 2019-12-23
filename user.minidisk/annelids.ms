@@ -36,27 +36,32 @@ for i in range(0,3)
 	allWorms.push worm
 end for
 
+desc = function(wormOrNull)
+	if wormOrNull == null then return "null"
+	return wormOrNull.desc
+end function
+
 select = function(worm)
 	if selected then selected.deselect
 	menu.hide
 	CastingUI.hide
 	if worm != null then worm.select
-	selected = worm
+	globals.selected = worm
 end function
 
 endTurn = function()
 	globals.curTeam = Worms.teams[1 - Worms.teams.indexOf(curTeam)]
 	curTeam.actionPoints = curTeam.actionPoints + 4
-	StatusUI.refresh
 	select null
+	StatusUI.refresh
 end function
 
 handleClick = function()
+	text.column = 0
 	if StatusUI.handleClick then return	
 	if CastingUI.isShown and CastingUI.handleClick then return
 	if selected then
 		if selected.handleClick then return
-		print "Deselecting!"
 		selected.deselect
 	end if
 	// Now we're going to check for worms... but only if we're not
@@ -87,6 +92,8 @@ while not key.pressed("escape")
 
 	menu.update dt
 	CastingUI.update dt
+	
+	//text.row = 20; text.column = 1; print "sel: " + desc(selected) + " "*20; text.row = 19
 	
 	if mouse.button and not lastMouseButton then handleClick
 

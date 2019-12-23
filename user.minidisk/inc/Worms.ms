@@ -36,8 +36,11 @@ for c in teamColors
 	d.slither = spriteControllers.newAnimation(getFrames(sheet, 0, 0, 11, 42, 42))
 	d.idle = spriteControllers.newAnimation(getFrames(sheet, 1, 0, 8, 42, 42))
 	d.idle.fps = 5
-	d.jumpUp = spriteControllers.newAnimation(getFrames(sheet, 2, 0, 7))
-	d.jumpDown = spriteControllers.newAnimation(getFrames(sheet, 2, 8, 5))
+	d.jumpUp = spriteControllers.newAnimation(getFrames(sheet, 2, 0, 7, 42, 42))
+	d.jumpUp.loop = false
+	d.jumpUp.fps = 30
+	d.jumpDown = spriteControllers.newAnimation(getFrames(sheet, 2, 7, 1, 42, 42))
+	d.jumpDown.loop = false
 	wormAnims[c] = d
 end for
 
@@ -64,6 +67,8 @@ Worm.localBounds = new Bounds
 Worm.localBounds.width = 32
 Worm.localBounds.height = 32
 Worm.mode = kModeIdle
+Worm.movementLeft = 0
+Worm.grounded = false
 
 Worm.init = function(x, y, team)
 	super.init x, y
@@ -81,6 +86,10 @@ Worm.init = function(x, y, team)
 	self.healthBar = new Sprite
 	disp.sprites.push self.healthBar
 	self.updateHealthBar
+end function
+
+Worm.desc = function()
+	return self.team.color + " worm at " + round(self.x) + "," + round(self.y) + " with " + self.health + " HP"
 end function
 
 Worm.updateHealthBar = function()
@@ -105,14 +114,23 @@ Worm.takeDamage = function(damage, impulse=null)
 end function
 
 Worm.startMoveJumpMode = function()
-	StatusUI.drawEvent "(Move/Jump)"
+	self.team.actionPoints = self.team.actionPoints - 1
+	Worm.movementLeft = 200
+	StatusUI.refresh
+	StatusUI.drawEvent "Move/Jump (100%)"
 	self.mode = kModeMove
 end function
 
 Worm.update = function(dt=0.1)
 	super.update dt
-	if self.mode == kModeMove and mouse.button then
+	if self.mode == kModeMove and mouse.button and Worm.movementLeft > 0 then
 		self.walkOrJumpTowards DisplayUtils.screenToWorld(mouse), dt
+		if Worm.movementLeft <= 0 then
+			StatusUI.drawEvent ""
+			globals.select null
+		else
+			StatusUI.drawEvent "Move/Jump (" + round(100*worm.movementLeft/200) + "%)"
+		end if
 	end if
 	self.vy = self.vy + Projectiles.kGravity * dt
 	if self.vy < -500 then self.vy = -500  // (terminal velocity)
@@ -126,10 +144,21 @@ Worm.update = function(dt=0.1)
 		groundY = DisplayUtils.dropRay(self.x, self.y, self.y - nextY + 16)
 		if groundY != null then
 			self.vy = 0
+			self.grounded = true
+			self.curAnim = self.anims.idle
 			nextY = groundY + 16
 			self.vx = self.vx / 2
 			if abs(self.vx) < 1 then self.vx = 0
+		else
+			self.curAnim = self.anims.jumpDown
 		end if
+	else if self.vy > 0 then
+		self.grounded = false
+		ceilingY = DisplayUtils.castRayUp(self.x, self.y, nextY - self.y + 16)
+		if ceilingY != null then
+			self.vy = 0
+			nextY = ceilingY - 16
+		end if		
 	end if
 	self.y = nextY
 	self.healthBar.x = self.x
@@ -140,17 +169,21 @@ Worm.walkOrJumpTowards = function(target, dt)
 	tooClose = self.contains(target)
 	if tooClose then return
 	angle = atan(target.y - self.y, target.x - self.x) * 180/pi
-	if self.vy == 0 then
+	if self.grounded then
 		// on the ground: walk towards the target, or start a jump
 		if angle > 40 and angle < 140 then
 			// jump!
 			radians = angle * pi/180
 			self.vx = 1000 * cos(radians)
 			self.vy = 1000 * sin(radians)
+			self.curAnim = self.anims.jumpUp
+			self.curAnim.curFrame = 0
+			Worm.movementLeft = Worm.movementLeft - 40
 		else
 			// walk
-			self.vx = 10 * sign(target.x - self.x)
+			self.vx = 10 * sign(target.x - self.x)			
 			self.x = self.x + 10 * self.vx * dt
+			Worm.movementLeft = Worm.movementLeft - abs(10 * self.vx * dt)
 		end if
 	else
 		// already in the air... add some jump influence here
@@ -178,7 +211,7 @@ Worm.deselect = function()
 end function
 
 Worm.handleClick = function()
-	if self.mode != kModeMove then
+	if self.mode != kModeMove and self.team.actionPoints > 0 then
 		self.startMoveJumpMode
 	end if
 	return true
