@@ -20,6 +20,7 @@ import "Worms"
 import "Spells"
 import "CastingUI"
 import "StatusUI"
+import "AI"
 
 // Prepare a menu, but don't show it yet
 // (Note: we're not actually using the radial menu at the moment.
@@ -108,6 +109,9 @@ end for
 curTeam = Worms.teams[Worms.teams.len-1]
 endTurn	// (makes sure everything is set up for team 0)
 
+// Hook up the AI to the desired team
+AI.team = Worms.teams[1]
+
 // Main loop (repeats forever until Escape key is pressed)
 lastTime = time
 lastMouseButton = mouse.button
@@ -119,7 +123,8 @@ while not key.pressed("escape")
 
 	menu.update dt
 	CastingUI.update dt
-
+	AI.update dt
+	
 	if mouse.button and not lastMouseButton then handleClick
 
 	lastMouseButton = mouse.button
