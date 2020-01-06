@@ -288,6 +288,7 @@ end function
 Worm.deselect = function()
 	self.selected = false
 	self.mode = kModeIdle
+	if selected == self then globals.selected = null
 end function
 
 // someWorm.handleClick: assume the mouse button is down while this worm is
