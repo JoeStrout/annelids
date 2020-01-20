@@ -145,6 +145,7 @@ Worm.takeDamage = function(damage, impulse=null)
 	self.health = self.health - damage
 	if self.health <= 0 then
 		self.hide
+		self.team.removeWorm self
 		disp.sprites.removeVal self.healthBar
 	else
 		self.updateHealthBar

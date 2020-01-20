@@ -13,6 +13,7 @@ reticle.radius = 100	// distance between anchor and actual reticle
 reticle.isVisible = false
 reticle.isCharging = false
 reticle.chargeTime = 0
+reticle.controlPos = mouse
 
 reticle.init = function(x, y)
 	super.init x, y
@@ -25,14 +26,14 @@ end function
 
 reticle.update = function(dt=0.1)
 	if not self.isVisible then return
-	dx = mouse.x + disp.scrollX - self.anchorX
-	dy = mouse.y - self.anchorY
+	dx = self.controlPos.x + disp.scrollX - self.anchorX
+	dy = self.controlPos.y - self.anchorY
 	mouseDist = sqrt(dx*dx + dy*dy)
 	dx = dx / mouseDist
 	dy = dy / mouseDist
 	self.x = self.anchorX + dx * self.radius
 	self.y = self.anchorY + dy * self.radius
-	if mouse.button and not self.isCharging then
+	if self.controlPos.button and not self.isCharging then
 		// start charging
 		self.isCharging = true
 		self.chargeTime = 0
@@ -42,7 +43,7 @@ reticle.update = function(dt=0.1)
 		chargeSound.play
 	end if
 	if self.isCharging then
-		if not mouse.button then
+		if not self.controlPos.button then
 			// Fire!
 			disp.sprites.removeVal chargeInd
 			self.isCharging = false

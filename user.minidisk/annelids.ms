@@ -58,6 +58,11 @@ end function
 endTurn = function()
 	globals.curTeam = Worms.teams[1 - Worms.teams.indexOf(curTeam)]
 	curTeam.actionPoints = curTeam.actionPoints + 4
+	if curTeam == AI.team then
+		reticle.controlPos = AI.aiMouse
+	else
+		reticle.controlPos = mouse
+	end if
 	select null
 	StatusUI.refresh
 end function
