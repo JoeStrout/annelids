@@ -173,6 +173,7 @@ effectProjectiles = {}	// key: effect name; value: Projectile subclass
 // Spell base class.
 Spell = {}
 Spell.usesReticle = true
+Spell.projectileSpeed = 2000
 Spell.init = function(caster, elements)
 	self.caster = caster
 	self.elements = elements
@@ -184,8 +185,8 @@ Spell.fire = function(dx, dy, chargeTime)
 	proj = new projClass
 	proj.init self.caster.x, self.caster.y
 	proj.spell = self
-	proj.vx = dx * 2000 * chargeTime
-	proj.vy = dy * 2000 * chargeTime
+	proj.vx = dx * self.projectileSpeed * chargeTime
+	proj.vy = dy * self.projectileSpeed * chargeTime
 	return proj
 end function
 

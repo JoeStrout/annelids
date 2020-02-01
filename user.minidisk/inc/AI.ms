@@ -1,6 +1,7 @@
 // Annelids artificial intelligence (AI) player.
 
 import "listUtil"
+import "Ballistics"
 
 // randRange: return a uniformly distributed random number between the
 // given minimum and maximum values (including min, but not including max).
@@ -70,13 +71,30 @@ aiMouse = {"x": 0, "y": 0, "button": false}
 // Shoot a spell at a random enemy worm.
 // (or for now, just fire in any random direction)
 startSpell = function()
-	aiMouse.x = curWorm.x - disp.scrollX + randRange(-100, 100)
-	aiMouse.y = curWorm.y + randRange(10,100)
+	enemyTeam = Worms.teams[1 - Worms.teams.indexOf(curTeam)]
+	if not enemyTeam.worms then return
+	target = enemyTeam.worms.any
+	
+	angles = Ballistics.anglesToHit(Spells.Spell.projectileSpeed,
+		target.x - curWorm.x, target.y - curWorm.y, abs(Projectiles.kGravity))
+	if not angles then
+		// fire at random!
+		aiMouse.x = curWorm.x - disp.scrollX + randRange(-100, 100)
+		aiMouse.y = curWorm.y + randRange(10,100)
+		outer.waitUntil = time + randRange(0.1, 1)
+	else
+		// fire at target using either of the possible angles
+		// (but favoring the latter one, which is usually shallower)
+		angles.push angles[-1]
+		ang = angles.any
+		aiMouse.x = curWorm.x - disp.scrollX + 20 * cos(ang)
+		aiMouse.y = curWorm.y + 20 * sin(ang)
+		outer.waitUntil = time + 1
+	end if
 	aiMouse.button = true
 	CastingUI.caster = curWorm
 	CastingUI.addElement CastingUI.elementSprites.any
 	CastingUI.startCasting
-	outer.waitUntil = time + randRange(0.1, 1)
 	outer.afterWaitDo = @continueSpell
 end function
 
