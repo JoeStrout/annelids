@@ -144,9 +144,33 @@ startCasting = function(worm, elements)
 	end function
 end function
 
+// easeFunc: a function to map a straight/linear range to a "smoothed"
+// 0-1 range (using half a sine curve).  Used by some of the spell
+// effects below.
+easeFunc = function(t, length=1)
+	// ease from 0 to 1 as t goes from 0 to length
+	x = sin(t/length * pi/2)
+	return x*x
+end function
+ 
+// easeInOutFunc: another easing function; this one eases up to 1
+// stays there over fullT, and then eases back down to 0 at totalT.
+easeInOutFunc = function(t, totalT=1, fullT=0.5)
+	t0 = (totalT - fullT)/2
+	if t < t0 then return easeFunc(t, t0)
+	t1 = (totalT + fullT)/2
+	if t > t1 then return 1 - easeFunc(t - t1, t0)
+	return 1
+end function
+
+
+// maps from the effect name to the Spell and Projectile subclasses
+// that actually implement that effect (we'll fill these in as we go below)
 effectSpells = {}		// key: effect name; value: Spell subclass
 effectProjectiles = {}	// key: effect name; value: Projectile subclass
 
+//----------------------------------------------------------------------
+// Spell base class.
 Spell = {}
 Spell.usesReticle = true
 Spell.init = function(caster, elements)
@@ -165,9 +189,15 @@ Spell.fire = function(dx, dy, chargeTime)
 	return proj
 end function
 
+//----------------------------------------------------------------------
+// Generic bolt projectile (used for any spell that doesn't specify
+// some alternative; also the base class for some spell projectiles).
 BoltProjectile = new Projectile
 BoltProjectile.image = file.loadImage("sprites/bolt.png")
 
+//----------------------------------------------------------------------
+// PoisonProjectile: used for the kPoisonGas effect.
+// Generates a GasPuff when it hits.
 PoisonProjectile = new BoltProjectile
 PoisonProjectile.tint = color.green
 PoisonProjectile.explode = function()
@@ -178,6 +208,8 @@ PoisonProjectile.explode = function()
 	self.hide
 end function
 effectProjectiles[kPoisonGas] = PoisonProjectile
+
+// GasPuff sprite (floats about and does damage to worms).
 GasPuff = new UpdateableSprite
 GasPuff.image = file.loadImage("sprites/poisonGas.png")
 GasPuff.localBounds = new Bounds
@@ -220,17 +252,24 @@ GasPuff.update = function(dt)
 	self.x = self.x + 50 * dt * sign(leftY - rightY)
 end function
 
+//----------------------------------------------------------------------
+// StoneProjectile (used for kStone and kBoulder effects).
 StoneProjectile = new Projectile
 StoneProjectile.image = file.loadImage("sprites/rock.png")
 StoneProjectile.rotate = false
 effectProjectiles[kStone] = StoneProjectile
 effectProjectiles[kBoulder] = StoneProjectile
 
+//----------------------------------------------------------------------
+// HandProjectile (used for kHand effect)
 HandProjectile = new Projectile
 HandProjectile.image = file.loadImage("sprites/fist.png")
 HandProjectile.angleOffset = -45
 effectProjectiles[kHand] = HandProjectile
 
+//----------------------------------------------------------------------
+// TeleportProjectile (used for kTeleport effect).
+// Moves the caster instantly to wherever it hits.
 TeleportProjectile = new Projectile
 TeleportProjectile.sound = file.loadSound("sounds/teleport.wav")
 TeleportProjectile.explode = function()
@@ -244,6 +283,10 @@ TeleportProjectile.explode = function()
 end function
 effectProjectiles[kTeleport] = TeleportProjectile
 
+//----------------------------------------------------------------------
+// SnowProjectile (used for kSnow effect).
+// Makes a bunch of snow appear as pixels in the gfx layer, which
+// slowly filter down and accumulate on other stuff (e.g. terrain).
 SnowProjectile = new Projectile
 SnowProjectile.explode = function()
 	self.hide
@@ -285,6 +328,9 @@ SnowProjectile.explode = function()
 end function
 effectProjectiles[kSnow] = SnowProjectile
 
+//----------------------------------------------------------------------
+// GroundProjectile (used for kTerrain effect).
+// Draws new hunks of terrain into the graphics layer where it hits.
 GroundProjectile = new Projectile
 GroundProjectile.sound = file.loadSound("sounds/terrain.wav")
 GroundProjectile.pieces = []
@@ -304,21 +350,21 @@ GroundProjectile.explode = function()
 end function
 effectProjectiles[kTerrain] = GroundProjectile
 
-easeFunc = function(t, length=1)
-	// ease from 0 to 1 as t goes from 0 to length
-	x = sin(t/length * pi/2)
-	return x*x
+//----------------------------------------------------------------------
+// AcidRainProjectile (used for kAcidRain effect).
+// Where it hits, generates AcidRainCloud sprites that in turn
+// emit AcidRainDrop projectiles.  (Bloody weather.)
+AcidRainProjectile = new BoltProjectile
+AcidRainProjectile.tint = "#880000"
+AcidRainProjectile.sound = file.loadSound("sounds/splat.wav")
+AcidRainProjectile.explode = function()
+	self.sound.play
+	cloud = new AcidRainCloud
+	cloud.init self.x, self.y
+	if self.spell.elements.len > 2 then cloud.rainTime = 8
+	self.hide
 end function
- 
-easeInOutFunc = function(t, totalT=1, fullT=0.5)
-	// function that eases up to 1, stays there over fullT,
-	// and then eases back down to 0 at totalT.
-	t0 = (totalT - fullT)/2
-	if t < t0 then return easeFunc(t, t0)
-	t1 = (totalT + fullT)/2
-	if t > t1 then return 1 - easeFunc(t - t1, t0)
-	return 1
-end function
+effectProjectiles[kAcidRain] = AcidRainProjectile
 
 AcidRainCloud = new UpdateableSprite
 AcidRainCloud.image = file.loadImage("sprites/cloud1.png")
@@ -359,15 +405,3 @@ AcidRainDrop.rotate = false
 AcidRainDrop.boomRadius = 2
 AcidRainDrop.boomDamage = 10
 AcidRainDrop.boomForce = 0
-
-AcidRainProjectile = new BoltProjectile
-AcidRainProjectile.tint = "#880000"
-AcidRainProjectile.sound = file.loadSound("sounds/splat.wav")
-AcidRainProjectile.explode = function()
-	self.sound.play
-	cloud = new AcidRainCloud
-	cloud.init self.x, self.y
-	if self.spell.elements.len > 2 then cloud.rainTime = 8
-	self.hide
-end function
-effectProjectiles[kAcidRain] = AcidRainProjectile
